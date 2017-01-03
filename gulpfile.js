@@ -31,8 +31,7 @@ const argv = require('yargs').argv;
 const rename = require('gulp-rename');
 const symlink = require("gulp-sym");
 const chmod = require('gulp-chmod');
-const lazypipe = require('lazypipe');
-const htmlmin = require('gulp-htmlmin');
+const stream = require('merge-stream')();
 
 /*******************************************************************************
  * SETTINGS
@@ -48,14 +47,6 @@ const sassOptions = {
     index: true,
     bower: true
   }
-};
-
-const htmlminOptions = {
-  collapseWhitespace: true,
-  removeComments: true,
-  removeEmptyAttributes: true,
-  minifyJS: true,
-  minifyCSS: true
 };
 
 const browserSyncOptions = {
@@ -77,7 +68,7 @@ const browserSyncOptions = {
 function handleError(err){
   console.log(err.toString());
   this.emit('end');
-};
+}
 
 /*******************************************************************************
  * SASS BUILD PIPELINE
@@ -96,7 +87,7 @@ function buildCSS(){
     gulpif(!argv.debug, $.cssmin())
   ])
   .on('error', handleError);
-};
+}
 
 gulp.task('sass', function() {
   return gulp.src(['./sass/*.scss'])
@@ -115,27 +106,6 @@ gulp.task('sass:clean', function() {
     read: false
   })
   .pipe($.clean());
-});
-
-/*******************************************************************************
- * HTML BUILD PIPELINE
- *
- * Builds the _*.html files to *.html files to prepare for production. Uses
- * various methods to improve client performane (minify, etc).
- ******************************************************************************/
-
-var buildPipe = lazypipe()
-  .pipe(htmlmin, htmlminOptions)
-  .pipe(function() {
-    return rename(function(path) {
-      path.basename = path.basename.substr(1);
-    });
-  })
-  .pipe(gulp.dest,'.');
-
-
-gulp.task('html', function() {
-  return gulp.src('_*.html').pipe(buildPipe());
 });
 
 /*******************************************************************************
@@ -164,7 +134,81 @@ gulp.task('bump:major', function(){
 });
 
 /*******************************************************************************
- * DEVELOPMENT BUILD PIPELINE
+ * COPY FILES INTO DIST
+ * This taks loop through an array of all the files that need to be in the dist folder, merges them into a stream, and returns that.
+ * @usage Run `gulp copyFilesIntoDist` to copy files into the dist folder.
+ * files/folders:
+ * index.html
+ * the pages folder (html files only)
+ * the elements folder (html and json)
+ * the css folder
+ * the img folder
+ * the type folder
+ * the bower_components
+ ******************************************************************************/
+
+gulp.task('copyFilesIntoDist',function() {
+    //the full array of what we want to end up in the dist folder/
+   let copyFrom = ['index.html', 'pages/**/*.html', 'elements/**/*.{html,json}', 'service-worker.js', 'type/**/*.{eot, svg, ttf, woff}', 'bower_components/**/*.*', 'img/**/*.*', 'css/**/*.*'];
+
+   //loop through our array to add each stream into the mergeStream process.
+   copyFrom.forEach((fileOrFolder) => {
+     let current;
+     //do we have globbing? if not, just use the file/folder name.
+     if (fileOrFolder.indexOf('*') > -1) {
+      let firstIndex = fileOrFolder.indexOf('/');
+      let copyName = fileOrFolder.substr(0, firstIndex);
+      current = gulp.src([copyName + '/**/*.*']).pipe(gulp.dest('./dist/' + copyName));
+     } else {
+       current = gulp.src([fileOrFolder]).pipe(gulp.dest('./dist/'));
+     }
+     //add the current file/folder to the stream
+     stream.add(current);
+   });
+
+   //and make sure it's not empty before we return it.
+   return stream.isEmpty() ? null : stream;
+});
+
+/*******************************************************************************
+ * COPY FILES INTO DIST
+ * This taks loop through an array of all the files that need to be in the dist folder, merges them into a stream, and returns that.
+ * @usage Run `gulp copyFilesIntoDist` to copy files into the dist folder.
+ * files/folders:
+ * index.html
+ * the pages folder (html files only)
+ * the elements folder (html and json)
+ * the css folder
+ * the img folder
+ * the type folder
+ * the bower_components
+ ******************************************************************************/
+
+gulp.task('copyFilesIntoroot',function() {
+    //the full array of what we want to end up in the dist folder/
+   let copyFrom = ['dist/index.html', 'dist/pages/**/*.html', 'dist/elements/**/*.{html,json}', 'dist/service-worker.js', 'dist/type/**/*.{eot, svg, ttf, woff}', 'dist/bower_components/**/*.*', 'dist/img/**/*.*', 'dist/css/**/*.*'];
+
+   //loop through our array to add each stream into the mergeStream process.
+   copyFrom.forEach((fileOrFolder) => {
+     let current;
+     //do we have globbing? if not, just use the file/folder name.
+     if (fileOrFolder.indexOf('*') > -1) {
+      let firstIndex = fileOrFolder.indexOf('/');
+      let copyName = fileOrFolder.substr(0, firstIndex);
+      current = gulp.src(['dist/' + copyName + '/**/*.*']).pipe(gulp.dest('./' + copyName));
+     } else {
+       current = gulp.src(['dist/' + fileOrFolder]).pipe(gulp.dest('.'));
+     }
+     //add the current file/folder to the stream
+     stream.add(current);
+   });
+
+   //and make sure it's not empty before we return it.
+   return stream.isEmpty() ? null : stream;
+});
+
+/*******************************************************************************
+ * DEVELOPMENT SERVE PIPELINE
  *
  * Run `gulp serve` during development to continuously process files and reload
  * the browser when files are updated.
@@ -177,15 +221,23 @@ gulp.task('serve', function() {
 });
 
 /*******************************************************************************
+ * LOCAL BUILD PIPELINE
+ *
+ * Run `gulp` or `gulp build` to emulate files for dist locally.
+ ******************************************************************************/
+
+gulp.task('build', function(callback) {
+  gulpSequence('sass', 'copyFilesIntoDist', 'generate-service-worker')(callback);
+});
+
+/*******************************************************************************
  * PRODUCTION BUILD PIPELINE
  *
  * Run `gulp` or `gulp build` to prepare files for production before releasing
  * a new version of the project.
  ******************************************************************************/
 
-gulp.task('build', function(callback) {
-  gulpSequence('sass', 'html', 'generate-service-worker')(callback);
-});
+
 
 gulp.task('default', ['build']);
 
@@ -209,6 +261,17 @@ gulp.task('chmod', function() {
   .pipe(gulp.dest('.git-hooks'));
 });
 
+
+/*******************************************************************************
+ * ARE WE INSIDE TRAVIS?
+ *
+ * checks if we are inside the travis VM by testing the process.env.NODE_ENV
+ * - travis is "testing"
+ ******************************************************************************/
+ var isTravis = function() {
+   return process.env.NODE_ENV === "testing";
+ };
+
 /*******************************************************************************
  * SERVICE WORKER
  *
@@ -218,19 +281,15 @@ gulp.task('chmod', function() {
  ******************************************************************************/
 
 gulp.task('generate-service-worker', function(callback) {
-  var swPrecache = require('sw-precache');
-  var rootDir = '.';
+  var swPrecache = require('sw-precache'),
+      rootDir =  (!isTravis) ? './dist' : '.';
 
   swPrecache.write(path.join(rootDir, 'service-worker.js'), {
-    staticFileGlobs: [rootDir + '/use*.html',
-                      rootDir + '/px*.html',
-                      rootDir + '/w*.html',
-                      rootDir + '/l*.html',
-                      rootDir + '/index.html',
-                      rootDir + '/g.html',
-                      rootDir + '/c.html',
+    staticFileGlobs: [rootDir + '/index.html',
                       rootDir + '/img/**',
                       rootDir + '/type/**',
+                      rootDir + '/pages/**',
+                      rootDir + '/elements/**/*.html',
                       rootDir + '/css/**',
                       rootDir + '/bower_components/px-theme/**.html',
                       rootDir + '/bower_components/px-spinner/**.html',
