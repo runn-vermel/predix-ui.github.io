@@ -184,9 +184,9 @@ gulp.task('copyFilesIntoDist',function() {
  * the bower_components
  ******************************************************************************/
 
-gulp.task('copyFilesIntoroot',function() {
-    //the full array of what we want to end up in the dist folder/
-   let copyFrom = ['dist/index.html', 'dist/pages/**/*.html', 'dist/elements/**/*.{html,json}', 'dist/service-worker.js', 'dist/type/**/*.{eot, svg, ttf, woff}', 'dist/bower_components/**/*.*', 'dist/img/**/*.*', 'dist/css/**/*.*'];
+gulp.task('copyFilesIntoRoot',function() {
+    //the full array of what we want to end up in the root folder/
+   let copyFrom = ['./dist/index.html', './dist/pages/**/*.html', './dist/elements/**/*.{html,json}', './dist/service-worker.js', './dist/type/**/*.{eot, svg, ttf, woff}', './dist/bower_components/**/*.*', './dist/img/**/*.*', './dist/css/**/*.*'];
 
    //loop through our array to add each stream into the mergeStream process.
    copyFrom.forEach((fileOrFolder) => {
@@ -195,9 +195,9 @@ gulp.task('copyFilesIntoroot',function() {
      if (fileOrFolder.indexOf('*') > -1) {
       let firstIndex = fileOrFolder.indexOf('/');
       let copyName = fileOrFolder.substr(0, firstIndex);
-      current = gulp.src(['dist/' + copyName + '/**/*.*']).pipe(gulp.dest('./' + copyName));
+      current = gulp.src(['./dist/' + copyName + '/**/*.*']).pipe(gulp.dest('./' + copyName));
      } else {
-       current = gulp.src(['dist/' + fileOrFolder]).pipe(gulp.dest('.'));
+       current = gulp.src(['./dist/' + fileOrFolder]).pipe(gulp.dest('.'));
      }
      //add the current file/folder to the stream
      stream.add(current);
