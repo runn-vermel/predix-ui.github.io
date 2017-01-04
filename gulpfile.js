@@ -306,7 +306,7 @@ gulp.task('chmod', function() {
  * - travis is "testing"
  ******************************************************************************/
  var isTravis = function() {
-   return process.env.NODE_ENV === "testing";
+   return process.env.TRAVIS === true;
  };
 
 /*******************************************************************************
