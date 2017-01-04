@@ -1,0 +1,34 @@
+sudo: required
+dist: trusty
+language: node_js
+node_js:
+- stable
+branches:
+  except:
+  - gh-pages
+addons:
+  firefox: latest
+  apt:
+    sources:
+    - google-chrome
+    packages:
+    - google-chrome-stable
+before_script:
+- npm install web-component-tester
+- npm install bower
+- export PATH=$PWD/node_modules/.bin:$PATH
+- bower install
+after_success:
+  # Decrypt SSH key
+  - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -k "$DEPLOYSECRET" -in id_rsa.enc -out id_rsa -d; fi
+  # Move to ~/.ssh so we can use it in gulp git push
+  - mv id_rsa ~/.ssh/
+  # Prepare ssh key, which we''ll use to authenticate for SSH-push deploy
+  - eval `ssh-agent -s`
+  # ... and change permissions for deploy key
+  - chmod 0400 ~/.ssh/id_rsa
+  # Run the gulp command
+  - gulp prodBuild
+env:
+  global:
+    secure: DDLgq5qs5MSiK8GJEz75vcwV+VH+wCAHlZeg+V731n84DXMSvxId6ic3T6MpBdsFfyCzeejWO+r7b+Pm20MtGqPInaFvuNph4dCdwsy7tqEwPg3wpUxI0sJMtQuhlzEK7DpQ4LnC7C4kynirGt51ZtzRNk7pw0jhEfCNVp0S2iIxTa4fz4frQIEBtRz/KTG/gY1TAKqMrW6+x9Tsbatu8OTYl19N1AVboGs69AjF4o84Ab+RIPzxOvp7HLWJDRTtF8Mntq6RbvmRnlX1WWAyqPkYqqedUFw8FR4yaDyg7X1nxTmExmbv3r5F1McX+AQ7nw37UgTx6yEsJ5nallzEY4CBeKsXO8Qn6eHj0uIFQhSHgt6E30PahqjrVhDauDsM3YJRPllt2JgsQOtdHORtLxcUyBFNTgOiNpUZD2GQiSVIcmboHN1VAHWKqa07/ETUOp4LhR8qyno7iEe7pvsqrNq+0cKG1fqFw3BAyVZ0KLyfzsn38BglEHo+MAAnADiqZPkiv6fNazuF/9nM+ODIqmf0aBh8EC2e/nnMasYAVpBSaevGJJswh3ThoRek+RYphfc+V8emoWsRThHNzUips2fj6yN7p6ixQGEvlELsrnW6E78HgtN932gtgIjVNr0DTfStRX+N+JDgPyofs4tO8AsffgtDV0N5fHQ7o1VkIQ4=

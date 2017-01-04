@@ -32,6 +32,10 @@ const rename = require('gulp-rename');
 const symlink = require("gulp-sym");
 const chmod = require('gulp-chmod');
 const stream = require('merge-stream')();
+const del = require('del');
+const Promise = require("bluebird");
+const gitSync = require('gulp-git')
+const git = Promise.promisifyAll(gitSync);
 
 /*******************************************************************************
  * SETTINGS
@@ -149,7 +153,7 @@ gulp.task('bump:major', function(){
 
 gulp.task('copyFilesIntoDist',function() {
     //the full array of what we want to end up in the dist folder/
-   let copyFrom = ['index.html', 'pages/**/*.html', 'elements/**/*.{html,json}', 'service-worker.js', 'type/**/*.{eot, svg, ttf, woff}', 'bower_components/**/*.*', 'img/**/*.*', 'css/**/*.*'];
+   let copyFrom = ['index.html', 'favicon.ico', 'pages/**/*.html', 'elements/**/*.{html,json}', 'service-worker.js', 'type/**/*.{eot, svg, ttf, woff}', 'bower_components/**/*.*', 'img/**/*.*', 'css/**/*.*'];
 
    //loop through our array to add each stream into the mergeStream process.
    copyFrom.forEach((fileOrFolder) => {
@@ -186,7 +190,7 @@ gulp.task('copyFilesIntoDist',function() {
 
 gulp.task('copyFilesIntoRoot',function() {
     //the full array of what we want to end up in the root folder/
-   let copyFrom = ['./dist/index.html', './dist/pages/**/*.html', './dist/elements/**/*.{html,json}', './dist/service-worker.js', './dist/type/**/*.{eot, svg, ttf, woff}', './dist/bower_components/**/*.*', './dist/img/**/*.*', './dist/css/**/*.*'];
+   let copyFrom = ['./dist/index.html', './dist/favicon.ico', './dist/pages/**/*.html', './dist/elements/**/*.{html,json}', './dist/service-worker.js', './dist/type/**/*.{eot, svg, ttf, woff}', './dist/bower_components/**/*.*', './dist/img/**/*.*', './dist/css/**/*.*'];
 
    //loop through our array to add each stream into the mergeStream process.
    copyFrom.forEach((fileOrFolder) => {
@@ -221,22 +225,54 @@ gulp.task('serve', function() {
 });
 
 /*******************************************************************************
- * LOCAL BUILD PIPELINE
+ * DELETE ALL FILES FOR PRODUCTION
  *
- * Run `gulp` or `gulp build` to emulate files for dist locally.
+ * This removes all the files except the dist folder, cleaning up the way for
+ * the orphan gh-pages branch
+ ******************************************************************************/
+gulp.task('deleteFiles', function() {
+    return del(['./**/*.*', '!.git/**/*.*', '!./index.html', '!./favicon.ico', '!./pages/**/*.html', '!./elements/**/*.{html,json}', '!./service-worker.js', '!./type/**/*.{eot, svg, ttf, woff}', '!./bower_components/**/*.*', '!./img/**/*.*', '!./css/**/*.*']);
+});
+
+/*******************************************************************************
+ * GIT PRODUCTION BUILD PIPELINE
+ *
+ * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
 
-gulp.task('build', function(callback) {
+gulp.task('gitAddCommitPush', function() {
+  git.checkout({args : '--orphan', cwd : '.'})
+  .then(() => {
+    return gulp.src('./*')
+          .pipe(gitSync.add())
+          .pipe(gitSync.commit('gh-pages rebuild'));
+  })
+  .then(() => git.push('origin', 'gh-pages'));
+});
+
+/*******************************************************************************
+ * LOCAL BUILD PIPELINE
+ *
+ * Run `gulp` or `gulp localBuild` to emulate files for dist locally.
+ ******************************************************************************/
+
+gulp.task('localBuild', function(callback) {
   gulpSequence('sass', 'copyFilesIntoDist', 'generate-service-worker')(callback);
 });
 
 /*******************************************************************************
  * PRODUCTION BUILD PIPELINE
  *
- * Run `gulp` or `gulp build` to prepare files for production before releasing
+ * Run `gulp` or `gulp prodBuild` to prepare files for production before releasing
  * a new version of the project.
  ******************************************************************************/
 
+gulp.task('prodBuild', function(callback) {
+   if (isTravis()) {
+     console.log("inside Travis");
+     gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitAddCommitPush')(callback);
+   }
+});
 
 
 gulp.task('default', ['build']);
