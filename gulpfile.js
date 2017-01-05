@@ -241,7 +241,7 @@ gulp.task('deleteFiles', function() {
  ******************************************************************************/
 
 gulp.task('gitAddCommitPush', function() {
-  git.checkout({args : '--orphan'})
+  git.checkout({args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR})
   .then(() => {
     return gulp.src('./*')
           .pipe(gitSync.add())
