@@ -262,9 +262,21 @@ gulp.task('gitPush', ['gitCommit'], () => {
 gulp.task('gitCheckout', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
     if (err) {
-
       console.log(err);
     }
+    return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
+        .pipe(gitSync.add())
+        .pipe(gitSync.commit('gh-pages rebuild'))
+        .on('end', () => {
+          gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
+            if (errPush) {
+              console.log('pushed');
+              console.log(errPush);
+            } else {
+              console.log("success!");
+            }
+          });
+        });
 });
 });
 
