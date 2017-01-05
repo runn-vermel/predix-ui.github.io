@@ -251,6 +251,7 @@ gulp.task('gitCommit', () => {
 gulp.task('gitPush', () => {
   return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
     if (errPush) {
+      console.log('pushed');
       console.log(errPush);
     }
 });
