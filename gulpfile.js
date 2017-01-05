@@ -295,7 +295,7 @@ gulp.task('localBuild', function(callback) {
 gulp.task('prodBuild', function(callback) {
   console.log('process.env.TRAVIS = ' + process.env.TRAVIS);
    console.log("inside Travis");
-   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout','gitAdd', 'gitPush')(callback);
+   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout', 'gitPush')(callback);
 });
 
 
