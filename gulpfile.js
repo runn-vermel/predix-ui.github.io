@@ -240,20 +240,26 @@ gulp.task('deleteFiles', function() {
  ******************************************************************************/
 
  gulp.task('gitStuff', function() {
-   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
+   var path;
+   if (isTravis) {
+     path = process.env.TRAVIS_BUILD_DIR;
+   } else {
+     path=".";
+   }
+   gitSync.checkout('gh-pages',{args : '--orphan', cwd : path}, (err) => {
      if (err) {
        console.log(err);
      }
      console.log('finished checkout successfully');
-     console.log("process.env.TRAVIS_BUILD_DIR + '/node_modules/* = " + process.env.TRAVIS_BUILD_DIR + '/node_modules/*');
+     console.log("process.env.TRAVIS_BUILD_DIR + '/node_modules/* = " + path + '/node_modules/*');
      //set the source to our working directory and exclude node_modules
-     return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
+     return gulp.src('.', {cwd:path})
          .pipe(gitSync.add()) //git add
          .on('error', (err) => console.log(err))
          .pipe(gitSync.commit('gh-pages rebuild')) //git commit
          .on('error', (err) => console.log(err))
          .on('end', () => { //this is the only way i foudn to run this synchronously.
-           gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR, args: "--force"}, (errPush) => {
+           gitSync.push('origin', 'gh-pages', {cwd: path, args: "--force"}, (errPush) => {
              if (errPush) {
                console.log('push error: ' + errPush);
              } else {
