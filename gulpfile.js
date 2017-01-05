@@ -249,7 +249,7 @@ gulp.task('gitAddCommitPush', function() {
       gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
           .pipe(gitSync.commit('gh-pages rebuild'));
 
-      gitSync.push('origin', 'gh-pages', (errPush) => {
+      gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
         if (errPush) console.log(errPush);
       });
     });
