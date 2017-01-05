@@ -258,7 +258,7 @@ gulp.task('deleteFiles', function() {
      return gulp.src('.', {cwd:path})
          .pipe(gitSync.add()) //git add
          .on('error', (err) => console.log(err))
-         .pipe(gitSync.commit('gh-pages rebuild')) //git commit
+         .pipe(gitSync.commit('gh-pages rebuild', {maxBuffer: 'infinity'})) //git commit
          .on('error', (err) => console.log(err))
          .on('end', () => { //this is the only way i foudn to run this synchronously.
            gitSync.push('origin', 'gh-pages', {cwd: path, args: "--force"}, (errPush) => {
