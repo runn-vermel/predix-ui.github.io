@@ -238,26 +238,26 @@ gulp.task('deleteFiles', function() {
  *
  * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
-gulp.task('gitAdd', ['gitCheckout'], () => {
-  return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
-      .pipe(gitSync.add());
-});
-
-gulp.task('gitCommit', ['gitAdd'], () => {
-  return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
-  .pipe(gitSync.commit('gh-pages rebuild'));
-});
-
-gulp.task('gitPush', ['gitCommit'], () => {
-  return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
-    if (errPush) {
-      console.log('pushed');
-      console.log(errPush);
-    } else {
-      console.log("success!");
-    }
-  });
-});
+// gulp.task('gitAdd', ['gitCheckout'], () => {
+//   return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
+//       .pipe(gitSync.add());
+// });
+//
+// gulp.task('gitCommit', ['gitAdd'], () => {
+//   return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
+//   .pipe(gitSync.commit('gh-pages rebuild'));
+// });
+//
+// gulp.task('gitPush', ['gitCommit'], () => {
+//   return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
+//     if (errPush) {
+//       console.log('pushed');
+//       console.log(errPush);
+//     } else {
+//       console.log("success!");
+//     }
+//   });
+// });
 
 gulp.task('gitCheckout', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
@@ -301,7 +301,7 @@ gulp.task('localBuild', function(callback) {
 gulp.task('prodBuild', function(callback) {
   console.log('process.env.TRAVIS = ' + process.env.TRAVIS);
    console.log("inside Travis");
-   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitPush')(callback);
+   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout')(callback);
 });
 
 
