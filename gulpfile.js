@@ -230,7 +230,7 @@ gulp.task('serve', function() {
  * the orphan gh-pages branch
  ******************************************************************************/
 gulp.task('deleteFiles', function() {
-    return del(['./**/*.*', '!.git/**/*.*', '!./index.html', '!./favicon.ico', '!./pages/**/*.html', '!./elements/**/*.{html,json}', '!./service-worker.js', '!./sw.tmpl', '!./type/**/*.{eot, svg, ttf, woff}', '!./bower_components/**/*.*', '!./img/**/*.*', '!./css/**/*.*', '!./node_modules/**/*.*']);
+    return del(['./**/*.*', './.gitignore', '!.git/**/*.*', '!./index.html', '!./favicon.ico', '!./pages/**/*.html', '!./elements/**/*.{html,json}', '!./service-worker.js', '!./sw.tmpl', '!./type/**/*.{eot, svg, ttf, woff}', '!./bower_components/**/*.*', '!./img/**/*.*', '!./css/**/*.*', '!./node_modules/**/*.*']);
 });
 
 /*******************************************************************************
@@ -239,21 +239,21 @@ gulp.task('deleteFiles', function() {
  * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
 
-gulp.task('gitCheckout', function() {
+gulp.task('gitStuff', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
     if (err) {
       console.log(err);
     }
+    //set the source to our working directory and exclude node_modules
     return gulp.src(['.', '!' + process.env.TRAVIS_BUILD_DIR + '/node_modules/*'], {cwd:process.env.TRAVIS_BUILD_DIR})
-        .pipe(gitSync.add())
-        .pipe(gitSync.commit('gh-pages rebuild'))
-        .on('end', () => {
+        .pipe(gitSync.add()) //git add
+        .pipe(gitSync.commit('gh-pages rebuild')) //git commit
+        .on('end', () => { //this is the only way i foudn to run this synchronously.
           gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR, args: "--force"}, (errPush) => {
             if (errPush) {
-              console.log('pushed');
               console.log(errPush);
             } else {
-              console.log("success!");
+              console.log("pushed successfully!");
             }
           });
         });
@@ -264,7 +264,7 @@ gulp.task('gitCheckout', function() {
 /*******************************************************************************
  * LOCAL BUILD PIPELINE
  *
- * Run `gulp` or `gulp localBuild` to emulate files for dist locally.
+ * Run `gulp` or `gulp localBuild` to emulate files for dist folder locally.
  ******************************************************************************/
 
 gulp.task('localBuild', function(callback) {
@@ -279,9 +279,7 @@ gulp.task('localBuild', function(callback) {
  ******************************************************************************/
 
 gulp.task('prodBuild', function(callback) {
-  console.log('process.env.TRAVIS = ' + process.env.TRAVIS);
-   console.log("inside Travis");
-   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout')(callback);
+   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitStuff')(callback);
 });
 
 
