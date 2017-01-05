@@ -150,7 +150,7 @@ gulp.task('bump:major', function(){
  * the bower_components
  ******************************************************************************/
 
-gulp.task('copyFilesIntoDist',function() {
+gulp.task('copyFilesIntoDist', ['sass'], function() {
     //the full array of what we want to end up in the dist folder/
    let copyFrom = ['index.html', 'favicon.ico', 'pages/**/*.html', 'elements/**/*.{html,json}', 'service-worker.js', 'type/**/*.{eot, svg, ttf, woff}', 'bower_components/**/*.*', 'img/**/*.*', 'css/**/*.*'];
 
@@ -238,33 +238,13 @@ gulp.task('deleteFiles', function() {
  *
  * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
-// gulp.task('gitAdd', ['gitCheckout'], () => {
-//   return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
-//       .pipe(gitSync.add());
-// });
-//
-// gulp.task('gitCommit', ['gitAdd'], () => {
-//   return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
-//   .pipe(gitSync.commit('gh-pages rebuild'));
-// });
-//
-// gulp.task('gitPush', ['gitCommit'], () => {
-//   return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
-//     if (errPush) {
-//       console.log('pushed');
-//       console.log(errPush);
-//     } else {
-//       console.log("success!");
-//     }
-//   });
-// });
 
 gulp.task('gitCheckout', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
     if (err) {
       console.log(err);
     }
-    return gulp.src('.', {cwd:process.env.TRAVIS_BUILD_DIR})
+    return gulp.src(['.', '!' + process.env.TRAVIS_BUILD_DIR + '/node_modules/*'], {cwd:process.env.TRAVIS_BUILD_DIR})
         .pipe(gitSync.add())
         .pipe(gitSync.commit('gh-pages rebuild'))
         .on('end', () => {
@@ -277,7 +257,7 @@ gulp.task('gitCheckout', function() {
             }
           });
         });
-});
+    });
 });
 
 
