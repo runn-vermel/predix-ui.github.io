@@ -248,13 +248,13 @@ gulp.task('deleteFiles', function() {
      //set the source to our working directory and exclude node_modules
      return gulp.src(['.', '!' + process.env.TRAVIS_BUILD_DIR + '/node_modules/*'], {cwd:process.env.TRAVIS_BUILD_DIR})
          .pipe(gitSync.add()) //git add
-         .on('error', (err) => console.log(err))
+         //.on('error', (err) => console.log(err))
          .pipe(gitSync.commit('gh-pages rebuild')) //git commit
-         .on('error', (err) => console.log(err))
+         //.on('error', (err) => console.log(err))
          .on('end', () => { //this is the only way i foudn to run this synchronously.
            gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR, args: "--force"}, (errPush) => {
              if (errPush) {
-               console.log(errPush);
+               console.log('push error: ' + errPush);
              } else {
                console.log("pushed successfully!");
              }
