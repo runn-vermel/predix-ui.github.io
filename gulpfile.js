@@ -231,7 +231,7 @@ gulp.task('serve', function() {
  * the orphan gh-pages branch
  ******************************************************************************/
 gulp.task('deleteFiles', function() {
-    return del(['./**/*.*', '!.git/**/*.*', '!./index.html', '!./favicon.ico', '!./pages/**/*.html', '!./elements/**/*.{html,json}', '!./service-worker.js', '!./type/**/*.{eot, svg, ttf, woff}', '!./bower_components/**/*.*', '!./img/**/*.*', '!./css/**/*.*']);
+    return del(['./**/*.*', '!.git/**/*.*', '!./index.html', '!./favicon.ico', '!./pages/**/*.html', '!./elements/**/*.{html,json}', '!./service-worker.js', '!./type/**/*.{eot, svg, ttf, woff}', '!./bower_components/**/*.*', '!./img/**/*.*', '!./css/**/*.*', '!./node_modules/**/*.*']);
 });
 
 /*******************************************************************************
