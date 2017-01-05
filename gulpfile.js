@@ -241,7 +241,7 @@ gulp.task('deleteFiles', function() {
 gulp.task('gitAdd', () => {
   return gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
       .pipe(gitSync.add())
-      .pipe(gitSync.commit('gh-pages rebuild'));;
+      .pipe(gitSync.commit('gh-pages rebuild'));
 });
 
 // gulp.task('gitCommit', () => {
@@ -261,12 +261,19 @@ gulp.task('gitPush', () => {
 gulp.task('gitCheckout', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
     if (err) {
+
       console.log(err);
     }
+
+    console.log("inside checkout");
+
+    gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
+        .pipe(gitSync.add())
+        .pipe(gitSync.commit('gh-pages rebuild'));
     });
 });
 
-gulp.task('gitStuff', () => gulpSequence('gitCheckout','gitAdd', 'gitCommit', 'gitPush'));
+gulp.task('gitStuff', () => gulpSequence('gitCheckout', 'gitPush'));
 
 /*******************************************************************************
  * LOCAL BUILD PIPELINE
