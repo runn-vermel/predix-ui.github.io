@@ -239,7 +239,7 @@ gulp.task('deleteFiles', function() {
  * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
 gulp.task('gitAdd', ['gitCheckout'], () => {
-  return gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
+  return gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
       .pipe(gitSync.add());
 });
 
