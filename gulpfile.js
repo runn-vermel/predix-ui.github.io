@@ -248,7 +248,7 @@ gulp.task('gitCheckout', function() {
         .pipe(gitSync.add())
         .pipe(gitSync.commit('gh-pages rebuild'))
         .on('end', () => {
-          gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
+          gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR, args: "--force"}, (errPush) => {
             if (errPush) {
               console.log('pushed');
               console.log(errPush);
