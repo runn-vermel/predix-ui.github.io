@@ -249,14 +249,9 @@ gulp.task('gitAdd', () => {
 //
 // });
 
-gulp.task('gitPush', () => {
-  return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
-    if (errPush) {
-      console.log('pushed');
-      console.log(errPush);
-    }
-});
-});
+// gulp.task('gitPush', () => {
+//   return
+// });
 
 gulp.task('gitCheckout', function() {
   gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
@@ -269,7 +264,15 @@ gulp.task('gitCheckout', function() {
 
     gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
         .pipe(gitSync.add())
-        .pipe(gitSync.commit('gh-pages rebuild'));
+        .pipe(gitSync.commit('gh-pages rebuild'))
+        .pipe(gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
+          if (errPush) {
+            console.log('pushed');
+            console.log(errPush);
+          } else {
+            console.log("success!");
+          }
+      }));
     });
 });
 
