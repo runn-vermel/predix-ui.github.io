@@ -241,13 +241,19 @@ gulp.task('deleteFiles', function() {
  ******************************************************************************/
 
 gulp.task('gitAddCommitPush', function() {
-  git.checkout('gh-pages', {args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR})
-  .then(() => {
-    return gulp.src('./*')
-          .pipe(gitSync.add())
+  gulp.task('gitAddCommitPush', function() {
+    gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
+      if (err) console.log(err);
+      gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
+          .pipe(gitSync.add());
+      gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
           .pipe(gitSync.commit('gh-pages rebuild'));
-  })
-  .then(() => git.push('origin', 'gh-pages'));
+
+      gitSync.push('origin', 'gh-pages', (errPush) => {
+        if (errPush) console.log(errPush);
+      });
+    });
+  });
 });
 
 /*******************************************************************************
