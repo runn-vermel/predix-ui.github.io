@@ -241,9 +241,11 @@ gulp.task('deleteFiles', function() {
 
  gulp.task('gitStuff', function() {
    var path;
-   if (isTravis) {
+   if (isTravis()) {
+     console.log("we're in travis!");
      path = process.env.TRAVIS_BUILD_DIR;
    } else {
+     console.log("we're local.");
      path=".";
    }
    gitSync.checkout('gh-pages',{args : '--orphan', cwd : path}, (err) => {
