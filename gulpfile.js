@@ -33,9 +33,8 @@ const symlink = require("gulp-sym");
 const chmod = require('gulp-chmod');
 const stream = require('merge-stream')();
 const del = require('del');
-const Promise = require("bluebird");
-const gitSync = require('gulp-git')
-const git = Promise.promisifyAll(gitSync);
+const gitSync = require('gulp-git');
+
 
 /*******************************************************************************
  * SETTINGS
@@ -239,22 +238,33 @@ gulp.task('deleteFiles', function() {
  *
  * this task creates an orphan git branch, and does a git add/commit/push
  ******************************************************************************/
-
-gulp.task('gitAddCommitPush', function() {
-  gulp.task('gitAddCommitPush', function() {
-    gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
-      if (err) console.log(err);
-      gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
-          .pipe(gitSync.add());
-      gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
-          .pipe(gitSync.commit('gh-pages rebuild'));
-
-      gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
-        if (errPush) console.log(errPush);
-      });
-    });
-  });
+gulp.task('gitAdd', () => {
+  return gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
+      .pipe(gitSync.add());
 });
+
+gulp.task('gitCommit', () => {
+  return gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
+      .pipe(gitSync.commit('gh-pages rebuild'));
+});
+
+gulp.task('gitPush', () => {
+  return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
+    if (errPush) {
+      console.log(errPush);
+    }
+});
+});
+
+gulp.task('gitCheckout', function() {
+  gitSync.checkout('gh-pages',{args : '--orphan', cwd : process.env.TRAVIS_BUILD_DIR}, (err) => {
+    if (err) {
+      console.log(err);
+    }
+    });
+});
+
+gulp.task('gitStuff', () => gulpSequence('gitCheckout','gitAdd', 'gitCommit', 'gitPush'));
 
 /*******************************************************************************
  * LOCAL BUILD PIPELINE
@@ -276,7 +286,7 @@ gulp.task('localBuild', function(callback) {
 gulp.task('prodBuild', function(callback) {
   console.log('process.env.TRAVIS = ' + process.env.TRAVIS);
    console.log("inside Travis");
-   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitAddCommitPush')(callback);
+   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitStuff')(callback);
 });
 
 
