@@ -240,13 +240,14 @@ gulp.task('deleteFiles', function() {
  ******************************************************************************/
 gulp.task('gitAdd', () => {
   return gulp.src([process.env.TRAVIS_BUILD_DIR + "/*", "!" + process.env.TRAVIS_BUILD_DIR + "/node_modules/**/*.*"])
-      .pipe(gitSync.add());
+      .pipe(gitSync.add())
+      .pipe(gitSync.commit('gh-pages rebuild'));;
 });
 
-gulp.task('gitCommit', () => {
-  return gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
-      .pipe(gitSync.commit('gh-pages rebuild'));
-});
+// gulp.task('gitCommit', () => {
+//   return gulp.src(process.env.TRAVIS_BUILD_DIR + "/*")
+//
+// });
 
 gulp.task('gitPush', () => {
   return gitSync.push('origin', 'gh-pages', {cwd: process.env.TRAVIS_BUILD_DIR}, (errPush) => {
@@ -287,7 +288,7 @@ gulp.task('localBuild', function(callback) {
 gulp.task('prodBuild', function(callback) {
   console.log('process.env.TRAVIS = ' + process.env.TRAVIS);
    console.log("inside Travis");
-   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout','gitAdd', 'gitCommit', 'gitPush')(callback);
+   gulpSequence('sass', 'deleteFiles', 'generate-service-worker', 'gitCheckout','gitAdd', 'gitPush')(callback);
 });
 
 
