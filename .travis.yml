@@ -24,6 +24,7 @@ after_success:
 - mv id_rsa ~/.ssh/
 - eval `ssh-agent -s`
 - chmod 0400 ~/.ssh/id_rsa
+- git remote set-url origin git@github.com:runn-vermel/predix-ui.github.io.git
 - gulp prodBuild
 env:
   global:
