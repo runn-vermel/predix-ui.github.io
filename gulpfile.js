@@ -253,7 +253,6 @@ gulp.task('deleteFiles', function() {
        console.log(err);
      }
      console.log('finished checkout successfully');
-     console.log("process.env.TRAVIS_BUILD_DIR + '/node_modules/* = " + path + '/node_modules/*');
      //set the source to our working directory and exclude node_modules
      return gulp.src('.', {cwd:path})
          .pipe(gitSync.add()) //git add
