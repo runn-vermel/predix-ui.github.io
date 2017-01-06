@@ -19,16 +19,12 @@ before_script:
 - export PATH=$PWD/node_modules/.bin:$PATH
 - bower install
 after_success:
-  # Decrypt SSH key
-  - if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -k "$password" -in id_rsa.enc -out id_rsa -d; fi
-  # Move to ~/.ssh so we can use it in gulp git push
-  - mv id_rsa ~/.ssh/
-  # Prepare ssh key, which we''ll use to authenticate for SSH-push deploy
-  - eval `ssh-agent -s`
-  # ... and change permissions for deploy key
-  - chmod 0400 ~/.ssh/id_rsa
-  # Run the gulp command
-  - gulp prodBuild
+- if [ "${TRAVIS_PULL_REQUEST}" = "false" ]; then openssl aes-256-cbc -k "$password"
+  -in id_rsa.enc -out id_rsa -d; fi
+- mv id_rsa ~/.ssh/
+- eval `ssh-agent -s`
+- chmod 0400 ~/.ssh/id_rsa
+- gulp prodBuild
 env:
   global:
-    secure: DDLgq5qs5MSiK8GJEz75vcwV+VH+wCAHlZeg+V731n84DXMSvxId6ic3T6MpBdsFfyCzeejWO+r7b+Pm20MtGqPInaFvuNph4dCdwsy7tqEwPg3wpUxI0sJMtQuhlzEK7DpQ4LnC7C4kynirGt51ZtzRNk7pw0jhEfCNVp0S2iIxTa4fz4frQIEBtRz/KTG/gY1TAKqMrW6+x9Tsbatu8OTYl19N1AVboGs69AjF4o84Ab+RIPzxOvp7HLWJDRTtF8Mntq6RbvmRnlX1WWAyqPkYqqedUFw8FR4yaDyg7X1nxTmExmbv3r5F1McX+AQ7nw37UgTx6yEsJ5nallzEY4CBeKsXO8Qn6eHj0uIFQhSHgt6E30PahqjrVhDauDsM3YJRPllt2JgsQOtdHORtLxcUyBFNTgOiNpUZD2GQiSVIcmboHN1VAHWKqa07/ETUOp4LhR8qyno7iEe7pvsqrNq+0cKG1fqFw3BAyVZ0KLyfzsn38BglEHo+MAAnADiqZPkiv6fNazuF/9nM+ODIqmf0aBh8EC2e/nnMasYAVpBSaevGJJswh3ThoRek+RYphfc+V8emoWsRThHNzUips2fj6yN7p6ixQGEvlELsrnW6E78HgtN932gtgIjVNr0DTfStRX+N+JDgPyofs4tO8AsffgtDV0N5fHQ7o1VkIQ4=
+    secure: c5G0a8PneAusMvvpan4ocLg/hnjYHxE9ycVf9Zw5HpJB2Htg1Zz1yNFTKu/kbLYOI/Ua6KE03gwXJad4uHpLnAUdZ/Z8gcOdYkrV79XM4yuOl30aoul8Lxwel9/dWH8i1IHZtDak0MV2kQiIa5Xkcv1G7p8sBvCjCzJh4KkU3XoXxzbbDthQvKbjmro/Z1vKv6fOL3BbNbLnkIqx6sskAUgGs2IR4++ZH+lH/Y1hZReCwnZPFmz+EvZQJstp2oczPAP4+JNbV+bZAa2o6y2OBhWWO4yVklZe5GbYa32KgygDnt08uO35AKFucRFnBIvXTqu26CgwqRbPS9q0nU8mBmKrQLWAizDAIr9FKrj8dxriiwzxxiq1CSrKkeP80jo5wjd9tWayGfF5/PZ9yMj08iyf2N/BL43I9Mj5Wlb++boBPulr5RqD/lXmb7A7/cs3g7Dzlff868dXpWK4fcx1GCW777kd082QEatLwaDdjN3bESmjuHey0GJiMzsdmN/YyLY0AAQ0WojfMWlRhjLYtKSYcgVdDSMJMMoVLA0GJcE0nYc0mS2PDDxRDt5m4jd/+iidNvlGU21jRp2r4MKBIR/NDSGsUAQlGniirH390qf2bYEiBBgjIN8/Bkm1GOoWLz46XlbMPQDIfZn4SA/uZiknQWBLTK+XZrZkYxAKU9k=
